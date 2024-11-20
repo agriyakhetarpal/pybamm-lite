@@ -19,7 +19,7 @@ requirements:
 build:
   type: shared_library
   script: |
-    # Fix return type to avoid linker errors
+    # Fix return types to avoid linker errors
     grep -rl "void LAPACK" . | xargs sed -i 's/void LAPACK/int LAPACK/g'
     grep -rl "void BLAS" . | xargs sed -i 's/void BLAS/int BLAS/g'
 
