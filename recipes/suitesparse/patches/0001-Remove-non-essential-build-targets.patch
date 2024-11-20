@@ -1,0 +1,130 @@
+From 5a1945fa1a45c913d77c3579b0181d2655896568 Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Wed, 20 Nov 2024 13:33:08 +0530
+Subject: [PATCH] Remove non-essential build targets
+
+---
+ Makefile | 69 --------------------------------------------------------
+ 1 file changed, 69 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index a2562580f..6870d70cf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -23,113 +23,44 @@ default: library
+ # (or whatever your CMAKE_INSTALL_PREFIX is)
+ library:
+ 	( cd SuiteSparse_config && $(MAKE) )
+-	( cd Mongoose && $(MAKE) )
+ 	( cd AMD && $(MAKE) )
+ 	( cd BTF && $(MAKE) )
+-	( cd CAMD && $(MAKE) )
+-	( cd CCOLAMD && $(MAKE) )
+ 	( cd COLAMD && $(MAKE) )
+-	( cd CHOLMOD && $(MAKE) )
+-	( cd CSparse && $(MAKE) )
+-	( cd CXSparse && $(MAKE) )
+-	( cd LDL && $(MAKE) )
+ 	( cd KLU && $(MAKE) )
+-	( cd UMFPACK && $(MAKE) )
+-	( cd RBio && $(MAKE) )
+-	( cd SuiteSparse_GPURuntime && $(MAKE) )
+-	( cd GPUQREngine && $(MAKE) )
+-	( cd SPQR && $(MAKE) )
+-	( cd GraphBLAS && $(MAKE) )
+-	( cd SPEX && $(MAKE) )
+ 
+ # compile; "make install" only in  SuiteSparse/lib and SuiteSparse/include
+ local:
+ 	( cd SuiteSparse_config && $(MAKE) local )
+-	( cd Mongoose && $(MAKE) local )
+ 	( cd AMD && $(MAKE) local )
+ 	( cd BTF && $(MAKE) local )
+-	( cd CAMD && $(MAKE) local )
+-	( cd CCOLAMD && $(MAKE) local )
+ 	( cd COLAMD && $(MAKE) local )
+-	( cd CHOLMOD && $(MAKE) local )
+-	( cd CSparse && $(MAKE) )  # CSparse is compiled but not installed
+-	( cd CXSparse && $(MAKE) local )
+-	( cd LDL && $(MAKE) local )
+ 	( cd KLU && $(MAKE) local )
+-	( cd UMFPACK && $(MAKE) local )
+-	( cd RBio && $(MAKE) local )
+-	( cd SuiteSparse_GPURuntime && $(MAKE) local )
+-	( cd GPUQREngine && $(MAKE) local )
+-	( cd SPQR && $(MAKE) local )
+-	( cd GraphBLAS && $(MAKE) local )
+-	( cd SPEX && $(MAKE) local )
+ 
+ # compile; "sudo make install" will install only in /usr/local
+ # (or whatever your CMAKE_INSTALL_PREFIX is)
+ global:
+ 	( cd SuiteSparse_config && $(MAKE) global )
+-	( cd Mongoose && $(MAKE) global )
+ 	( cd AMD && $(MAKE) global )
+ 	( cd BTF && $(MAKE) global )
+-	( cd CAMD && $(MAKE) global )
+-	( cd CCOLAMD && $(MAKE) global )
+ 	( cd COLAMD && $(MAKE) global )
+-	( cd CHOLMOD && $(MAKE) global )
+-	( cd CSparse && $(MAKE) )  # CSparse is compiled but not installed
+-	( cd CXSparse && $(MAKE) global )
+-	( cd LDL && $(MAKE) global )
+ 	( cd KLU && $(MAKE) global )
+-	( cd UMFPACK && $(MAKE) global )
+-	( cd RBio && $(MAKE) global )
+-	( cd SuiteSparse_GPURuntime && $(MAKE) global )
+-	( cd GPUQREngine && $(MAKE) global )
+-	( cd SPQR && $(MAKE) global )
+-	( cd GraphBLAS && $(MAKE) global )
+-	( cd SPEX && $(MAKE) global )
+ 
+ # compile; "sudo make install" will install only in /usr/local
+ # (or whatever your CMAKE_INSTALL_PREFIX is)
+ both:
+ 	( cd SuiteSparse_config && $(MAKE) both )
+-	( cd Mongoose && $(MAKE) both )
+ 	( cd AMD && $(MAKE) both )
+ 	( cd BTF && $(MAKE) both )
+-	( cd CAMD && $(MAKE) both )
+-	( cd CCOLAMD && $(MAKE) both )
+ 	( cd COLAMD && $(MAKE) both )
+-	( cd CHOLMOD && $(MAKE) both )
+-	( cd CSparse && $(MAKE) )  # CSparse is compiled but not installed
+-	( cd CXSparse && $(MAKE) both )
+-	( cd LDL && $(MAKE) both )
+ 	( cd KLU && $(MAKE) both )
+-	( cd UMFPACK && $(MAKE) both )
+-	( cd RBio && $(MAKE) both )
+-	( cd SuiteSparse_GPURuntime && $(MAKE) both )
+-	( cd GPUQREngine && $(MAKE) both )
+-	( cd SPQR && $(MAKE) both )
+-	( cd GraphBLAS && $(MAKE) both )
+-	( cd SPEX && $(MAKE) both )
+ 
+ # install all packages.  Location depends on prior "make", "make global" etc
+ install:
+ 	( cd SuiteSparse_config && $(MAKE) install )
+-	( cd Mongoose  && $(MAKE) install )
+ 	( cd AMD && $(MAKE) install )
+ 	( cd BTF && $(MAKE) install )
+-	( cd CAMD && $(MAKE) install )
+-	( cd CCOLAMD && $(MAKE) install )
+ 	( cd COLAMD && $(MAKE) install )
+-	( cd CHOLMOD && $(MAKE) install )
+-	( cd CXSparse && $(MAKE) install ) # CXSparse is installed instead
+-	( cd LDL && $(MAKE) install )
+ 	( cd KLU && $(MAKE) install )
+-	( cd UMFPACK && $(MAKE) install )
+-	( cd RBio && $(MAKE) install )
+-	( cd SuiteSparse_GPURuntime && $(MAKE) install )
+-	( cd GPUQREngine && $(MAKE) install )
+-	( cd SPQR && $(MAKE) install )
+-	( cd GraphBLAS && $(MAKE) install )
+-	( cd SPEX && $(MAKE) install )
+ 
+ # uninstall all packages
+ uninstall:
+-- 
+2.39.3 (Apple Git-146)
+

@@ -1,0 +1,50 @@
+package:
+  # We need to use a non-Python CasADi (i.e. the C++ library) to build PyBaMM
+  # against, because libraries from the CasADi Python wheel are ELF binaries
+  # and they won't work when cross-compiling to WASM.
+  name: casadi
+  version: 3.6.7
+source:
+  url: https://github.com/casadi/casadi/archive/refs/tags/3.6.7.tar.gz
+  sha256: 47602bab2aa187bfa8280cc4fa7d68ee19abbbdfeb90991e9eb3dd88465fd18b
+requirements:
+  run:
+    - numpy
+  executable:
+    - swig
+build:
+  type: shared_library
+  exports: requested
+  script: |
+    mkdir -p build
+    cd build
+
+    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib -fexceptions"
+
+    emcmake cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
+      -DWITH_PYTHON=OFF \
+      -DWITH_DOC=OFF \
+      -DWITH_EXAMPLES=OFF \
+      -DWITH_BONMIN=OFF \
+      -DWITH_IPOPT=OFF \
+      -DWITH_OSQP=OFF \
+      -DWITH_QPOASES=OFF \
+      -DWITH_HSL=OFF \
+      -DWITH_MUMPS=OFF \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
+      -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS} -fexceptions -frtti" \
+      -DCMAKE_CXX_FLAGS="${SIDE_MODULE_CFLAGS} -fexceptions -frtti" \
+      ..
+
+      # The shared objects are not being copied to the right directory for some reason
+      # so we need to copy them manually
+
+    emmake make -j${PYODIDE_JOBS:-3} install
+
+about:
+  home: http://casadi.org
+  PyPI: https://pypi.org/project/casadi
+  summary: CasADi -- framework for algorithmic differentiation and numeric optimization
+  license: LGPL-3.0+

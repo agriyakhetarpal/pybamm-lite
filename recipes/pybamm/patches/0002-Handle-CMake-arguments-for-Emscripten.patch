@@ -1,0 +1,59 @@
+From a027a5a60bee250039b537346c1a5952d3ef57bb Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Wed, 20 Nov 2024 23:26:07 +0530
+Subject: [PATCH] Handle CMake arguments for Emscripten
+
+---
+ setup.py | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/setup.py b/setup.py
+index 74de1baca..8b4bb70e3 100644
+--- a/setup.py
++++ b/setup.py
+@@ -86,7 +86,9 @@ class CMakeBuild(build_ext):
+         # Build in parallel wherever possible
+         os.environ["CMAKE_BUILD_PARALLEL_LEVEL"] = str(cpu_count())
+ 
+-        if system() == "Windows":
++        # We use the CasADi vcpkg registry for Windows, and we compile
++        # CasADi from sources for Pyodide/WASM
++        if system() == "Windows" or "PYODIDE" in os.environ:
+             use_python_casadi = False
+         else:
+             use_python_casadi = True
+@@ -108,6 +110,31 @@ class CMakeBuild(build_ext):
+         if self.sundials_root:
+             cmake_args.append(f"-DSUNDIALS_ROOT={os.path.abspath(self.sundials_root)}")
+ 
++        # Special handling for Emscripten
++        if "PYODIDE" in os.environ:
++            # Drop PYTHON_EXECUTABLE from cmake_args and set some other args:
++            cmake_args.pop(cmake_args.index(f"-DPYTHON_EXECUTABLE={sys.executable}"))
++            # we need to set python$PYMAJOR.$PYMINOR as PYTHON_EXECUTABLE. Here,
++            # PYMAJOR AND PYMINOR are environment variables we have set in Pyodide.
++            pymajor = os.getenv("PYMAJOR")
++            pyminor = os.getenv("PYMINOR")
++            pythoninclude = os.getenv("PYTHONINCLUDE")
++            wasm_library_dir = os.getenv("WASM_LIBRARY_DIR")
++            cmake_args.extend(
++                [
++                    f"-DPython_EXECUTABLE=python{pymajor}.{pyminor}",
++                    f"-DPYTHON_EXECUTABLE=python{pymajor}.{pyminor}",
++                    f"-DPython_INCLUDE_DIR={pythoninclude}",
++                    f"-DPython_INCLUDE_DIRS={pythoninclude}",
++                    f"-DPYTHON_INCLUDE_DIR={pythoninclude}",
++                    f"-DPYTHON_INCLUDE_DIRS={pythoninclude}",
++                    "-DUSE_PYTHON_CASADI=FALSE",
++                    f"-DSUNDIALS_ROOT={wasm_library_dir}",
++                    f"-DSuiteSparse_ROOT={wasm_library_dir}",
++                    f"-DSuiteSparse_DIR={wasm_library_dir}",
++                ]
++                )
++
+         build_dir = self.get_build_directory()
+         if not os.path.exists(build_dir):
+             os.makedirs(build_dir)
+-- 
+2.39.3 (Apple Git-146)
+

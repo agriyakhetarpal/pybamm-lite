@@ -7,8 +7,8 @@ package:
 source:
   sha256: 7111b505c1207f6f4bd0be9740d0b2897e1146b845d73787df07901b4f5c1fb7
   url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v6.0.3.tar.gz
-  # patches:
-  #   - patches/0001-Remove-non-essential-build-targets.patch
+  patches:
+    - patches/0001-Remove-non-essential-build-targets.patch
 
 requirements:
   run:
@@ -19,23 +19,80 @@ requirements:
 build:
   type: shared_library
   script: |
-    # Fix return type to avoid linker errors
-    grep -rl "void LAPACK" . | xargs sed -i 's/void LAPACK/int LAPACK/g'
-    grep -rl "void BLAS" . | xargs sed -i 's/void BLAS/int BLAS/g'
+    # Fix return types to avoid linker errors
+    grep -rl 'void SUITESPARSE_BLAS_' * | xargs sed -i 's/void SUITESPARSE_BLAS_/int SUITESPARSE_BLAS_/g'
+    grep -rl "void SUITESPARSE_LAPACK_" . | xargs sed -i 's/void SUITESPARSE_LAPACK_/int SUITESPARSE_LAPACK_/g'
 
-    emmake make -j ${PYODIDE_JOBS:-3} install \
-      LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib " \
-      BLAS="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
-      LAPACK="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
-      INSTALL=${WASM_LIBRARY_DIR}
+    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib"
 
-    cp ${WASM_LIBRARY_DIR}/lib/libsuitesparseconfig.so \
-       ${WASM_LIBRARY_DIR}/lib/libamd.so \
-       ${WASM_LIBRARY_DIR}/lib/libcamd.so \
-       ${WASM_LIBRARY_DIR}/lib/libccolamd.so \
-       ${WASM_LIBRARY_DIR}/lib/libcolamd.so \
-        ${WASM_LIBRARY_DIR}/lib/libklu.so \
-       ${DISTDIR}
+    # Build SuiteSparse_config first
+    cd SuiteSparse_config
+    mkdir -p build && cd build
+
+    # Configure with emcmake
+    emcmake cmake .. \
+      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
+      -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS}" \
+      "-DCMAKE_SHARED_LINKER_FLAGS=${LDFLAGS}" \
+      -DENABLE_CUDA=OFF \
+      -DENABLE_OPENMP=OFF \
+      -DBLA_VENDOR=OpenBLAS \
+      -DBLAS_LIBRARIES="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+      -DLAPACK_LIBRARIES="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_Fortran_COMPILER=NO
+
+    # Build and install
+    emmake make -j${PYODIDE_JOBS:-3}
+    emmake make install
+
+    cd ../.. # Back to SuiteSparse root
+
+    # Function to build each component
+    build_component() {
+        local component=$1
+        echo "Building ${component}..."
+
+        cd ${component}
+        mkdir -p build && cd build
+
+        # Add NCHOLMOD flag only for KLU
+        if [ "${component}" = "KLU" ]; then
+            EXTRA_FLAGS="-DNCHOLMOD=ON"
+        else
+            EXTRA_FLAGS=""
+        fi
+
+        # Configure with emcmake
+        emcmake cmake .. \
+          -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
+          -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS}" \
+          "-DCMAKE_SHARED_LINKER_FLAGS=${LDFLAGS}" \
+          -DENABLE_CUDA=OFF \
+          -DENABLE_OPENMP=OFF \
+          -DBLA_VENDOR=OpenBLAS \
+          -DBLAS_LIBRARIES="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+          -DLAPACK_LIBRARIES="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+          -DSuiteSparse_config_DIR="${WASM_LIBRARY_DIR}/lib/cmake/suitesparse-config" \
+          -DBUILD_SHARED_LIBS=ON \
+          -DCMAKE_Fortran_COMPILER=NO \
+          ${EXTRA_FLAGS}
+
+        # Build and install
+        emmake make -j${PYODIDE_JOBS:-3}
+        emmake make install
+
+        cd ../.. # Back to SuiteSparse root
+    }
+
+    # Build components in order
+    for component in AMD COLAMD BTF KLU; do
+        build_component ${component}
+    done
+
+    # Verify installations
+    echo "Checking installed libraries..."
+    ls -l ${WASM_LIBRARY_DIR}/lib/lib{suitesparseconfig,amd,colamd,btf,klu}.so || true
 about:
   home: https://github.com/DrTimothyAldenDavis/SuiteSparse
   license: Mixed, see https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/dev/LICENSE.txt

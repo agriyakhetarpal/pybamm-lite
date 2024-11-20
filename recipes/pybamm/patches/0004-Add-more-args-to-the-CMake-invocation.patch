@@ -1,0 +1,38 @@
+From a37989941c7bd67c16ab1af1be6cb6f811c413d9 Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Thu, 21 Nov 2024 02:14:08 +0530
+Subject: [PATCH] Add more args to the CMake invocation
+
+---
+ setup.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/setup.py b/setup.py
+index 8b4bb70e3..747b2a783 100644
+--- a/setup.py
++++ b/setup.py
+@@ -112,8 +112,11 @@ class CMakeBuild(build_ext):
+ 
+         # Special handling for Emscripten
+         if "PYODIDE" in os.environ:
+-            # Drop PYTHON_EXECUTABLE from cmake_args and set some other args:
++            # Drop PYTHON_EXECUTABLE and SuiteSparse_ROOT, SUNIDALS_ROOT from cmake_args
++            # and set them again with the correct values
+             cmake_args.pop(cmake_args.index(f"-DPYTHON_EXECUTABLE={sys.executable}"))
++            cmake_args.pop(cmake_args.index(f"-DSUNDIALS_ROOT={os.path.abspath(self.sundials_root)}"))
++            cmake_args.pop(cmake_args.index(f"-DSuiteSparse_ROOT={os.path.abspath(self.suitesparse_root)}"))
+             # we need to set python$PYMAJOR.$PYMINOR as PYTHON_EXECUTABLE. Here,
+             # PYMAJOR AND PYMINOR are environment variables we have set in Pyodide.
+             pymajor = os.getenv("PYMAJOR")
+@@ -132,6 +135,8 @@ class CMakeBuild(build_ext):
+                     f"-DSUNDIALS_ROOT={wasm_library_dir}",
+                     f"-DSuiteSparse_ROOT={wasm_library_dir}",
+                     f"-DSuiteSparse_DIR={wasm_library_dir}",
++                    # Temporary, for debugging:
++                    "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG",
+                 ]
+                 )
+ 
+-- 
+2.39.3 (Apple Git-146)
+
