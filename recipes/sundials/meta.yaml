@@ -17,8 +17,19 @@ build:
       -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR}      \
       -DCMAKE_BUILD_TYPE=Release                      \
       -DBUILD_ARKODE=OFF                              \
+      -DBUILD_CVODES=ON                               \
+      -DBUILD_IDAS=ON                                 \
+      -DBUILD_SHARED_LIBS=ON                          \
+      -DBUILD_STATIC_LIBS=ON                          \
+      -DCMAKE_C_COMPILER=emcc                         \
+      -DCMAKE_CXX_COMPILER=em++                       \
       -DEXAMPLES_ENABLE_C=OFF                         \
-      -DEXAMPLES_ENABLE_FORTRAN=OFF                   \
+      -DEXAMPLES_ENABLE_CXX=OFF                       \
+      -DEXAMPLES_ENABLE_F2003                         \
+      -DEXAMPLES_ENABLE_CUDA=OFF                      \
+      -DENABLE_LAPACK=OFF                             \
+      -DCMAKE_Fortran_COMPILER=NO                     \
+      -DBUILD_FORTRAN_MODULE_INTERFACE=OFF            \
       -DEXAMPLES_INSTALL=OFF                          \
       -DENABLE_KLU=ON                                 \
       -DKLU_LIBRARY_DIR=${WASM_LIBRARY_DIR}/lib/      \
