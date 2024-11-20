@@ -1,0 +1,58 @@
+name: Build WASM dependencies and PyBaMM
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: apt-get update && apt-get install -y cmake build-essential libssl-dev pkg-config
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.58
+          actions-cache-folder: "emsdk-cache"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check out Pyodide
+        uses: actions/checkout@v4
+        with:
+          repository: pyodide/pyodide
+          path: pyodide_checkout
+
+      - name: Remove previous recipes and copy new ones
+        run: |
+          rm -rf pyodide_checkout/packages/pyodide/src/packages/openblas
+          rm -rf pyodide_checkout/packages/pyodide/src/packages/suitesparse
+          rm -rf pyodide_checkout/packages/pyodide/src/packages/sundials
+
+          cp -r recipes/openblas pyodide_checkout/packages/pyodide/src/packages/openblas
+          cp -r recipes/suitesparse pyodide_checkout/packages/pyodide/src/packages/suitesparse
+          cp -r recipes/sundials pyodide_checkout/packages/pyodide/src/packages/sundials
+          cp -r recipes/pybamm pyodide_checkout/packages/pyodide/src/packages/pybamm
+
+      - name: Build Pyodide distribution
+        working-directory: pyodide_checkout/
+        run: |
+          PYODIDE_JOBS=$(nproc) PYODIDE_PACKAGES="pybamm" make
+
+      - name: Upload Pyodide distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyodide_dist
+          path: pyodide_checkout/dist/*
+          if-no-files-found: error
