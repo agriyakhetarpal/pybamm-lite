@@ -35,6 +35,7 @@ jobs:
         with:
           repository: pyodide/pyodide
           path: pyodide_checkout
+          submodules: recursive
 
       - name: Remove previous recipes and copy new ones
         run: |
