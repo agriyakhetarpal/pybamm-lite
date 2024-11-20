@@ -4,13 +4,19 @@ package:
   top-level:
     - pybamm
 source:
-  url: https://files.pythonhosted.org/packages/27/b6/b5eed6cae2ee1e0b2a87b08ccb12e655a67198d5da11da811020536ba5f5/pybamm-24.9.0.tar.gz
-  sha256: 743dac0d17bd2f773050fe841cf3581658283f886e27795d9f5fd67d1ff563b5
+  # broken sdist because of missing FindSuiteSparse.cmake and FindSUNDIALS.cmake files
+  url: https://github.com/pybamm-team/PyBaMM/archive/refs/tags/v24.9.0.tar.gz
+  sha256: 20f9d8d62dba2d847346d62bca519a369d862ac9f6262cc57a9222fde0c04858
+  patches:
+    - patches/0001-Set-PYBIND11_FINDPYTHON-ON-for-FindPython.patch
+    - patches/0002-Handle-CMake-arguments-for-Emscripten.patch
+    - patches/0003-Find-CasADi-and-OpenBLAS.patch
+    - patches/0004-Add-more-args-to-the-CMake-invocation.patch
 build:
   ldflags: -L${WASM_LIBRARY_DIR}/lib
   script: |
-      # We'll likely have way more stuff to do here, let's see
-      git clone https://github.com/pybind/pybind11.git pybind11
+      # We'll likely have way more stuff to do here, let's see...
+      git clone https://github.com/pybind/pybind11.git --depth 1 pybind11
 requirements:
   host:
     - openblas
