@@ -1,0 +1,26 @@
+From 6742762bbdf2319883da186ccd9814bb0289ba7d Mon Sep 17 00:00:00 2001
+From: martinjrobins <martinjrobins@gmail.com>
+Date: Thu, 7 Sep 2023 15:32:25 +0000
+
+Subject: [PATCH] append to CMAKE_MODULE_PATH instead of overwrite (#335).
+ Signed-off-by: Martin Robinson <martinjrobins@gmail.com>
+
+This change appends to the CMAKE_MODULE_PATH instead of overwriting it.
+Sourced from https://github.com/LLNL/sundials/pull/336.
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7c937443af..9612b9de19 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -27,6 +27,7 @@ project(SUNDIALS C)
+
+ # Specify the location of additional CMAKE modules
+ set(CMAKE_MODULE_PATH
++  ${CMAKE_MODULE_PATH}
+   ${PROJECT_SOURCE_DIR}/cmake
+   ${PROJECT_SOURCE_DIR}/cmake/macros
+   ${PROJECT_SOURCE_DIR}/cmake/tpl
