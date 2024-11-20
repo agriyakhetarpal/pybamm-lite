@@ -79,7 +79,7 @@ build:
         cd ../.. # Back to SuiteSparse root
     }
 
-    # vuild components for KLU, in order
+    # build components for KLU, in order
     for component in AMD COLAMD BTF KLU; do
         build_component ${component}
     done
