@@ -1,0 +1,28 @@
+package:
+  name: sundials
+  version: 6.5.0
+source:
+  url: https://github.com/LLNL/sundials/releases/download/v6.5.0/sundials-6.5.0.tar.gz
+  sha256: 4e0b998dff292a2617e179609b539b511eb80836f5faacf800e688a886288502
+requirements:
+  host:
+    - openblas
+    - suitesparse
+build:
+  type: shared_library
+  script: |
+    mkdir build
+    cd build
+    emcmake cmake ${CMAKE_ARGS}                       \
+      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR}      \
+      -DCMAKE_BUILD_TYPE=Release                      \
+      -DBUILD_ARKODE=OFF                              \
+      -DEXAMPLES_ENABLE_C=OFF                         \
+      -DEXAMPLES_ENABLE_FORTRAN=OFF                   \
+      -DEXAMPLES_INSTALL=OFF                          \
+      -DENABLE_KLU=ON                                 \
+      -DKLU_LIBRARY_DIR=${WASM_LIBRARY_DIR}/lib/      \
+      -DKLU_INCLUDE_DIR=${WASM_LIBRARY_DIR}/include
+      ..
+
+    emmake make -j ${PYODIDE_JOBS:-3} install

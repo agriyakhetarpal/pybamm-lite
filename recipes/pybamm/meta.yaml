@@ -1,0 +1,31 @@
+package:
+  name: pybamm
+  version: 24.9.0
+  top-level:
+    - pybamm
+source:
+  url: https://files.pythonhosted.org/packages/27/b6/b5eed6cae2ee1e0b2a87b08ccb12e655a67198d5da11da811020536ba5f5/pybamm-24.9.0.tar.gz
+  sha256: 743dac0d17bd2f773050fe841cf3581658283f886e27795d9f5fd67d1ff563b5
+build:
+  ldflags: -L${WASM_LIBRARY_DIR}/lib
+requirements:
+  host:
+    - openblas
+    - suitesparse
+    - sundials
+    - casadi
+  run:
+    - numpy
+    - scipy
+    - casadi
+    - xarray
+    - anytree
+    - sympy
+    - typing-extensions
+    - pandas
+    - pooch # have to think about this one
+about:
+  home: https://pybamm.org/
+  PyPI: https://pypi.org/project/pybamm
+  summary: Python Battery Mathematical Modelling
+  license: BSD-3-Clause

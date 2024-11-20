@@ -1,0 +1,41 @@
+package:
+  name: suitesparse
+  version: 6.0.3
+  tag:
+    - library
+    - shared_library
+source:
+  sha256: 7111b505c1207f6f4bd0be9740d0b2897e1146b845d73787df07901b4f5c1fb7
+  url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v6.0.3.tar.gz
+  # patches:
+  #   - patches/0001-Remove-non-essential-build-targets.patch
+
+requirements:
+  run:
+    - openblas
+  host:
+    - openblas
+
+build:
+  type: shared_library
+  script: |
+    # Fix return type to avoid linker errors
+    grep -rl "void LAPACK" . | xargs sed -i 's/void LAPACK/int LAPACK/g'
+    grep -rl "void BLAS" . | xargs sed -i 's/void BLAS/int BLAS/g'
+
+    emmake make -j ${PYODIDE_JOBS:-3} install \
+      LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib " \
+      BLAS="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+      LAPACK="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
+      INSTALL=${WASM_LIBRARY_DIR}
+
+    cp ${WASM_LIBRARY_DIR}/lib/libsuitesparseconfig.so \
+       ${WASM_LIBRARY_DIR}/lib/libamd.so \
+       ${WASM_LIBRARY_DIR}/lib/libcamd.so \
+       ${WASM_LIBRARY_DIR}/lib/libccolamd.so \
+       ${WASM_LIBRARY_DIR}/lib/libcolamd.so \
+        ${WASM_LIBRARY_DIR}/lib/libklu.so \
+       ${DISTDIR}
+about:
+  home: https://github.com/DrTimothyAldenDavis/SuiteSparse
+  license: Mixed, see https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/dev/LICENSE.txt
