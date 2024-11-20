@@ -42,9 +42,13 @@ jobs:
           rm -rf pyodide_checkout/packages/pyodide/src/packages/suitesparse
           rm -rf pyodide_checkout/packages/pyodide/src/packages/sundials
 
+          mkdir -p pyodide_checkout/packages/pyodide/src/packages/openblas
           cp -r recipes/openblas pyodide_checkout/packages/pyodide/src/packages/openblas
+          mkdir -p pyodide_checkout/packages/pyodide/src/packages/suitesparse
           cp -r recipes/suitesparse pyodide_checkout/packages/pyodide/src/packages/suitesparse
+          mkdir -p pyodide_checkout/packages/pyodide/src/packages/sundials
           cp -r recipes/sundials pyodide_checkout/packages/pyodide/src/packages/sundials
+          mkdir -p pyodide_checkout/packages/pyodide/src/packages/pybamm
           cp -r recipes/pybamm pyodide_checkout/packages/pyodide/src/packages/pybamm
 
       - name: Build Pyodide distribution
