@@ -15,17 +15,11 @@ requirements:
 build:
   type: shared_library
   exports: requested
-  cflags: |
-    -fexceptions -frtti
-  cxxflags: |
-    -fexceptions -frtti
-  ldflags: |
-    -fexceptions
   script: |
     mkdir -p build
     cd build
 
-    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib"
+    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib -fexceptions"
 
     emcmake cmake \
       -DCMAKE_BUILD_TYPE=Release \
@@ -33,48 +27,21 @@ build:
       -DWITH_PYTHON=OFF \
       -DWITH_DOC=OFF \
       -DWITH_EXAMPLES=OFF \
-      -DWITH_TESTS=OFF \
       -DWITH_BONMIN=OFF \
       -DWITH_IPOPT=OFF \
       -DWITH_OSQP=OFF \
       -DWITH_QPOASES=OFF \
-      -DWITH_QUIPLES=OFF \
-      -DWITH_GLPK=OFF \
       -DWITH_HSL=OFF \
-      -DWITH_MA27=OFF \
-      -DWITH_MA57=OFF \
-      -DWITH_MA77=OFF \
-      -DWITH_MA86=OFF \
-      -DWITH_MA97=OFF \
       -DWITH_MUMPS=OFF \
-      -DWITH_PARDISO=OFF \
-      -DWITH_SUPERLU=OFF \
-      -DWITH_SUPERLU_MT=OFF \
-      -DWITH_WSMP=OFF \
-      -DWITH_UMFPACK=OFF \
-      -DWITH_AMD=OFF \
-      -DWITH_COLAMD=OFF \
-      -DWITH_CAMD=OFF \
-      -DWITH_CXSPARSE=OFF \
-      -DWITH_KLU=OFF \
-      -DWITH_CASADI_MEX=OFF \
-      -DWITH_CASADI_OCTAVE=OFF \
-      -DWITH_CASADI_PYTHON=OFF \
-      -DWITH_CASADI_MATLAB=OFF \
-      -DWITH_CASADI_SCILAB=OFF \
-      -DWITH_CASADI_R=OFF \
-      -DWITH_CASADI_PYTHON3=OFF \
-      -DWITH_CASADI_MATLAB3=OFF \
-      -DWITH_CASADI_SCILAB3=OFF \
-      -DWITH_CASADI_R3=OFF \
-      -DWITH_CASADI_PYTHON2=OFF \
-      -DWITH_CASADI_MATLAB2=OFF \
-      -DWITH_CASADI_SCILAB2=OFF \
-      -DWITH_CASADI_R2=OFF \
-      -DWITH_CASADI_PYTHON2=OFF \
       -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
-      -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS}"
+      -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS} -fexceptions -frtti" \
+      -DCMAKE_CXX_FLAGS="${SIDE_MODULE_CFLAGS} -fexceptions -frtti" \
       ..
+
+      # The shared objects are not being copied to the right directory for some reason
+      # so we need to copy them manually
+
+    emmake make -j${PYODIDE_JOBS:-3} install
 
 about:
   home: http://casadi.org
