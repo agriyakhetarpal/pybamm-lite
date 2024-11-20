@@ -4,6 +4,8 @@ package:
 source:
   url: https://github.com/LLNL/sundials/releases/download/v6.5.0/sundials-6.5.0.tar.gz
   sha256: 4e0b998dff292a2617e179609b539b511eb80836f5faacf800e688a886288502
+  patches:
+    - patches/0001-Fix-SUNDIALS_INDEX_SIZE.patch
 requirements:
   host:
     - openblas
@@ -11,29 +13,34 @@ requirements:
 build:
   type: shared_library
   script: |
-    mkdir build
+    mkdir -p build
     cd build
-    emcmake cmake ${CMAKE_ARGS}                       \
-      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR}      \
-      -DCMAKE_BUILD_TYPE=Release                      \
-      -DBUILD_ARKODE=OFF                              \
-      -DBUILD_CVODES=ON                               \
-      -DBUILD_IDAS=ON                                 \
-      -DBUILD_SHARED_LIBS=ON                          \
-      -DBUILD_STATIC_LIBS=ON                          \
-      -DCMAKE_C_COMPILER=emcc                         \
-      -DCMAKE_CXX_COMPILER=em++                       \
-      -DEXAMPLES_ENABLE_C=OFF                         \
-      -DEXAMPLES_ENABLE_CXX=OFF                       \
-      -DEXAMPLES_ENABLE_F2003                         \
-      -DEXAMPLES_ENABLE_CUDA=OFF                      \
-      -DENABLE_LAPACK=OFF                             \
-      -DCMAKE_Fortran_COMPILER=NO                     \
-      -DBUILD_FORTRAN_MODULE_INTERFACE=OFF            \
-      -DEXAMPLES_INSTALL=OFF                          \
-      -DENABLE_KLU=ON                                 \
-      -DKLU_LIBRARY_DIR=${WASM_LIBRARY_DIR}/lib/      \
-      -DKLU_INCLUDE_DIR=${WASM_LIBRARY_DIR}/include
+
+    export LDFLAGS="$LDFLAGS -L${WASM_LIBRARY_DIR}/lib"
+
+    emcmake cmake \
+      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_ARKODE=OFF \
+      -DBUILD_CVODES=ON \
+      -DBUILD_IDAS=ON \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_STATIC_LIBS=ON \
+      -DEXAMPLES_ENABLE_C=OFF \
+      -DEXAMPLES_ENABLE_CXX=OFF \
+      -DEXAMPLES_ENABLE_F2003=OFF \
+      -DEXAMPLES_ENABLE_CUDA=OFF \
+      -DENABLE_LAPACK=OFF \
+      -DENABLE_CUDA=OFF \
+      -DCMAKE_Fortran_COMPILER=NO \
+      -DBUILD_FORTRAN_MODULE_INTERFACE=OFF \
+      -DEXAMPLES_INSTALL=OFF \
+      -DSUNDIALS_INDEX_SIZE=32 \
+      -DENABLE_KLU=ON \
+      -DKLU_LIBRARY_DIR=${WASM_LIBRARY_DIR}/lib \
+      -DKLU_INCLUDE_DIR=${WASM_LIBRARY_DIR}/include \
+      -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS} -D__wasm32__" \
+      "-DCMAKE_SHARED_LINKER_FLAGS=${SIDE_MODULE_LDFLAGS}" \
       ..
 
-    emmake make -j ${PYODIDE_JOBS:-3} install
+    emmake make -j${PYODIDE_JOBS:-3} install
