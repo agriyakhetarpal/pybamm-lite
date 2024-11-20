@@ -1,0 +1,28 @@
+From 4a11a5d878defd82e78e89fbb3bf872e14dfe01a Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Wed, 20 Nov 2024 23:09:46 +0530
+Subject: [PATCH] Set `PYBIND11_FINDPYTHON` `ON` for `FindPython`
+
+Enables `PYBIND11_FINDPYTHON` for CMake's `FindPython` module to find the
+Python interpreter and libraries and correctly configure pybind11 for
+cross-compilation.
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ad56ac34c..9a959d322 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -32,6 +32,7 @@ endif()
+ # casadi seems to compile without the newer versions of std::string
+ add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
+ 
++set(PYBIND11_FINDPYTHON ON)
+ if(NOT PYBIND11_DIR)
+   set(PYBIND11_DIR pybind11)
+ endif()
+-- 
+2.39.3 (Apple Git-146)
+
