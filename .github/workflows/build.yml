@@ -19,17 +19,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y cmake build-essential libssl-dev pkg-config
 
-      - name: Set up Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 3.1.58
-          actions-cache-folder: "emsdk-cache"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Check out Pyodide
         uses: actions/checkout@v4
         with:
@@ -37,25 +26,14 @@ jobs:
           path: pyodide_checkout
           submodules: recursive
 
-      - name: Remove previous recipes and copy new ones
-        run: |
-          rm -rf pyodide_checkout/packages/pyodide/src/packages/openblas
-          rm -rf pyodide_checkout/packages/pyodide/src/packages/suitesparse
-          rm -rf pyodide_checkout/packages/pyodide/src/packages/sundials
-
-          mkdir -p pyodide_checkout/packages/pyodide/src/packages/openblas
-          cp -r recipes/openblas pyodide_checkout/packages/pyodide/src/packages/openblas
-          mkdir -p pyodide_checkout/packages/pyodide/src/packages/suitesparse
-          cp -r recipes/suitesparse pyodide_checkout/packages/pyodide/src/packages/suitesparse
-          mkdir -p pyodide_checkout/packages/pyodide/src/packages/sundials
-          cp -r recipes/sundials pyodide_checkout/packages/pyodide/src/packages/sundials
-          mkdir -p pyodide_checkout/packages/pyodide/src/packages/pybamm
-          cp -r recipes/pybamm pyodide_checkout/packages/pyodide/src/packages/pybamm
+      - name: Overwrite previous recipes and copy new ones
+        run: cp -r recipes/* pyodide_checkout/packages/
 
       - name: Build Pyodide distribution
         working-directory: pyodide_checkout/
         run: |
-          PYODIDE_JOBS=$(nproc) PYODIDE_PACKAGES="pybamm" make
+          PYODIDE_CORES=$(nproc)
+          PYODIDE_JOBS="${PYODIDE_CORES}" PYODIDE_PACKAGES="pybamm" make
 
       - name: Upload Pyodide distribution
         uses: actions/upload-artifact@v4
