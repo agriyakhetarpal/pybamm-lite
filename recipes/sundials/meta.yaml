@@ -16,7 +16,7 @@ build:
     mkdir -p build
     cd build
 
-    export LDFLAGS="$LDFLAGS -L${WASM_LIBRARY_DIR}/lib"
+    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib"
 
     emcmake cmake \
       -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
@@ -40,7 +40,7 @@ build:
       -DKLU_LIBRARY_DIR=${WASM_LIBRARY_DIR}/lib \
       -DKLU_INCLUDE_DIR=${WASM_LIBRARY_DIR}/include \
       -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS} -D__wasm32__" \
-      "-DCMAKE_SHARED_LINKER_FLAGS=${SIDE_MODULE_LDFLAGS}" \
+      "-DCMAKE_SHARED_LINKER_FLAGS=${LDFLAGS}" \
       ..
 
     emmake make -j${PYODIDE_JOBS:-3} install

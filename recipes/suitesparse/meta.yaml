@@ -23,14 +23,17 @@ build:
     grep -rl 'void SUITESPARSE_BLAS_' * | xargs sed -i 's/void SUITESPARSE_BLAS_/int SUITESPARSE_BLAS_/g'
     grep -rl "void SUITESPARSE_LAPACK_" . | xargs sed -i 's/void SUITESPARSE_LAPACK_/int SUITESPARSE_LAPACK_/g'
 
+    export LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib"
+
     # Build SuiteSparse_config first
     cd SuiteSparse_config
     mkdir -p build && cd build
 
+    # Configure with emcmake
     emcmake cmake .. \
       -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
       -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS}" \
-      "-DCMAKE_SHARED_LINKER_FLAGS=${SIDE_MODULE_LDFLAGS}" \
+      "-DCMAKE_SHARED_LINKER_FLAGS=${LDFLAGS}" \
       -DENABLE_CUDA=OFF \
       -DENABLE_OPENMP=OFF \
       -DBLA_VENDOR=OpenBLAS \
@@ -38,11 +41,14 @@ build:
       -DLAPACK_LIBRARIES="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
       -DBUILD_SHARED_LIBS=ON \
       -DCMAKE_Fortran_COMPILER=NO
+
+    # Build and install
     emmake make -j${PYODIDE_JOBS:-3}
     emmake make install
 
     cd ../.. # Back to SuiteSparse root
 
+    # Function to build each component
     build_component() {
         local component=$1
         echo "Building ${component}..."
@@ -50,19 +56,18 @@ build:
         cd ${component}
         mkdir -p build && cd build
 
-        # Don't build KLU with CHOLMOD enabled. The
-        # reason why we do this is because we don't
-        # need additional optional ordering options
+        # Add NCHOLMOD flag only for KLU
         if [ "${component}" = "KLU" ]; then
             EXTRA_FLAGS="-DNCHOLMOD=ON"
         else
             EXTRA_FLAGS=""
         fi
 
+        # Configure with emcmake
         emcmake cmake .. \
           -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
           -DCMAKE_C_FLAGS="${SIDE_MODULE_CFLAGS}" \
-          "-DCMAKE_SHARED_LINKER_FLAGS=${SIDE_MODULE_LDFLAGS}" \
+          "-DCMAKE_SHARED_LINKER_FLAGS=${LDFLAGS}" \
           -DENABLE_CUDA=OFF \
           -DENABLE_OPENMP=OFF \
           -DBLA_VENDOR=OpenBLAS \
@@ -73,18 +78,19 @@ build:
           -DCMAKE_Fortran_COMPILER=NO \
           ${EXTRA_FLAGS}
 
+        # Build and install
         emmake make -j${PYODIDE_JOBS:-3}
         emmake make install
 
         cd ../.. # Back to SuiteSparse root
     }
 
-    # build components for KLU, in order
+    # Build components in order
     for component in AMD COLAMD BTF KLU; do
         build_component ${component}
     done
 
-    # verify installation
+    # Verify installations
     echo "Checking installed libraries..."
     ls -l ${WASM_LIBRARY_DIR}/lib/lib{suitesparseconfig,amd,colamd,btf,klu}.so || true
 about:
