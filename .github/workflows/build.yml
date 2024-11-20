@@ -20,8 +20,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-            sudo apt-get update
-            sudo apt-get install -y cmake build-essential libssl-dev pkg-config
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libssl-dev pkg-config xxd git
+
+      - name: Cache ccache outputs
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/ccache
+          key: ccache-${{ hashFiles('Makefile.envs') }}
 
       - name: Check out Pyodide
         uses: actions/checkout@v4
@@ -33,11 +39,28 @@ jobs:
       - name: Overwrite previous recipes and copy new ones
         run: cp -r recipes/* pyodide_checkout/packages/
 
+      - name: Restore cached built packages
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            pyodide_checkout/packages/.libs/*
+            pyodide_checkout/packages/.artifacts/*
+          key: pyodide-packages-${{ hashFiles('pyodide_checkout/packages/recipes/**/*.yaml') }}
+
       - name: Build Pyodide distribution
         working-directory: pyodide_checkout/
         run: |
+          source pyodide_env.sh
+          ccache -z
           PYODIDE_CORES=$(nproc)
           PYODIDE_JOBS="${PYODIDE_CORES}" PYODIDE_PACKAGES="pybamm" make
+          ccache -s
+
+      - name: Save ccached outputs
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/ccache
+          key: ccache-${{ hashFiles('Makefile.envs') }}
 
       - name: Upload Pyodide distribution
         uses: actions/upload-artifact@v4
