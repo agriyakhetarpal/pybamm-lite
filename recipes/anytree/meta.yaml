@@ -1,0 +1,16 @@
+package:
+  name: anytree
+  version: 2.12.1
+  top-level:
+    - anytree
+source:
+  url: https://files.pythonhosted.org/packages/6a/fb/ff946843e6b55ae9fda84df3964d6c233cd2261dface789f5be02ab79bc5/anytree-2.12.1-py3-none-any.whl
+  sha256: 5ea9e61caf96db1e5b3d0a914378d2cd83c269dfce1fb8242ce96589fa3382f0
+requirements:
+  run:
+    - six
+about:
+  home: https://github.com/c0fec0de/anytree
+  PyPI: https://pypi.org/project/anytree
+  summary: Powerful and Lightweight Python Tree Data Structure with various plugins
+  license: Apache-2.0

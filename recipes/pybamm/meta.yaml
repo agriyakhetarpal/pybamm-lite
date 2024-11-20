@@ -23,7 +23,7 @@ requirements:
     - sympy
     - typing-extensions
     - pandas
-    - pooch # have to think about this one
+    - pooch
 about:
   home: https://pybamm.org/
   PyPI: https://pypi.org/project/pybamm
