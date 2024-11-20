@@ -21,7 +21,13 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential libssl-dev pkg-config xxd git
+          sudo apt-get install -y --no-install-recommends \
+          cmake bzip2 ccache f2c g++ gfortran git make \
+          patch pkg-config swig unzip wget xz-utils \
+          autoconf autotools-dev automake texinfo dejagnu \
+          build-essential libtool libltdl-dev \
+          gnupg2 libdbus-glib-1-2 sudo sqlite3 \
+          ninja-build jq xxd
 
       - name: Cache ccache outputs
         uses: actions/cache/restore@v4
